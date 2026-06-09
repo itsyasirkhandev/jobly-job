@@ -12,8 +12,44 @@ export const getOrCreateUser = authedMutation({
 	args: {},
 	handler: async (ctx) => runAuthedEffect(
 		Effect.gen(function* () {
-			yield* Effect.logInfo(`getOrCreateUser (auto-synced) for: ${ctx.viewer.email || 'unknown'}`);
-			return ctx.viewer._id;
+			yield* Effect.logInfo(`getOrCreateUser for: ${ctx.identity.email || 'unknown'}`);
+            
+			const { identity } = ctx;
+			const tokenIdentifier = identity.tokenIdentifier;
+
+			let viewer = yield* Effect.tryPromise(() => 
+				ctx.db.query('users')
+					.withIndex('by_token', (q) => q.eq('tokenIdentifier', tokenIdentifier))
+					.unique()
+			);
+
+			if (viewer) {
+				const updates: Record<string, string | undefined> = {};
+				if (viewer.name !== (identity.name ?? '')) {
+					updates.name = identity.name ?? '';
+				}
+				if (viewer.email !== (identity.email ?? '')) {
+					updates.email = identity.email ?? '';
+				}
+				if (viewer.avatarUrl !== identity.pictureUrl) {
+					updates.avatarUrl = identity.pictureUrl;
+				}
+
+				if (Object.keys(updates).length > 0) {
+					yield* Effect.tryPromise(() => ctx.db.patch(viewer!._id, updates));
+					viewer = (yield* Effect.tryPromise(() => ctx.db.get(viewer!._id)))!;
+				}
+			} else {
+				const userId = yield* Effect.tryPromise(() => ctx.db.insert('users', {
+					name: identity.name ?? '',
+					email: identity.email ?? '',
+					avatarUrl: identity.pictureUrl,
+					tokenIdentifier
+				}));
+				viewer = (yield* Effect.tryPromise(() => ctx.db.get(userId)))!;
+			}
+
+			return viewer._id;
 		})
 	)
 });

@@ -57,38 +57,10 @@ const authMutationGuard = customCtxAndArgs({
 			});
 		}
 
-		const tokenIdentifier = identity.tokenIdentifier;
-
-		let viewer = await ctx.db
+		const viewer = await ctx.db
 			.query('users')
-			.withIndex('by_token', (q) => q.eq('tokenIdentifier', tokenIdentifier))
+			.withIndex('by_token', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
 			.unique();
-
-		if (viewer) {
-			const updates: Record<string, string | undefined> = {};
-			if (viewer.name !== (identity.name ?? '')) {
-				updates.name = identity.name ?? '';
-			}
-			if (viewer.email !== (identity.email ?? '')) {
-				updates.email = identity.email ?? '';
-			}
-			if (viewer.avatarUrl !== identity.pictureUrl) {
-				updates.avatarUrl = identity.pictureUrl;
-			}
-
-			if (Object.keys(updates).length > 0) {
-				await ctx.db.patch(viewer._id, updates);
-				viewer = (await ctx.db.get(viewer._id))!;
-			}
-		} else {
-			const userId = await ctx.db.insert('users', {
-				name: identity.name ?? '',
-				email: identity.email ?? '',
-				avatarUrl: identity.pictureUrl,
-				tokenIdentifier
-			});
-			viewer = (await ctx.db.get(userId))!;
-		}
 
 		return { ctx: { ...ctx, identity, viewer }, args: {} };
 	}

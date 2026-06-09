@@ -42,7 +42,7 @@ export const addNumber = authedMutation({
 	},
 	handler: async (ctx, args) => runAuthedEffect(
 		Effect.gen(function* () {
-			const viewerName = ctx.viewer.name || ctx.identity.name || 'User';
+			const viewerName = ctx.viewer?.name || ctx.identity.name || 'User';
 			yield* Effect.logInfo(
 				`Adding number ${args.value} for: ${viewerName}`
 			);
