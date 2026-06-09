@@ -12,11 +12,15 @@ import { action, mutation, query } from '../_generated/server';
 import { ConvexError, ObjectType, PropertyValidators } from 'convex/values';
 import { Effect } from 'effect';
 import { ConvexDB } from '../services/ConvexDB';
+import { ServerConfig } from '../services/ServerConfig';
 
 const apiKeyGuard = customCtxAndArgs({
 	args: { apiKey: v.string() },
 	input: async (ctx, { apiKey }) => {
-		if (apiKey !== process.env.CONVEX_PRIVATE_BRIDGE_KEY) {
+		const config = await Effect.runPromise(
+			ServerConfig.pipe(Effect.provide(ServerConfig.layer))
+		);
+		if (apiKey !== config.convexPrivateBridgeKey) {
 			throw new Error('Invalid API key');
 		}
 		return { ctx, args: {} };

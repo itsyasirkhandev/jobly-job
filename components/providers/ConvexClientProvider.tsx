@@ -5,7 +5,9 @@ import { ConvexProviderWithAuth, ConvexReactClient, useConvexAuth, useMutation }
 import useFirebaseAuth from "@/hooks/useFirebaseAuth";
 import { api } from "@/convex/_generated/api";
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { clientConfig } from "@/lib/services/Config";
+
+const convex = new ConvexReactClient(clientConfig.convexUrl);
 
 function UserSyncTrigger() {
   const { isAuthenticated, isLoading } = useConvexAuth();
