@@ -1,9 +1,8 @@
 "use client";
 
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import UserProfile from "@/components/auth/UserProfile";
 import ThemeToggle from "@/components/ThemeToggle";
-import useFirebaseAuth from "@/hooks/useFirebaseAuth";
+import { UserButton, Show } from "@clerk/nextjs";
 import { useAppStore } from "@/store";
 import {
   House,
@@ -87,7 +86,6 @@ function Sidebar() {
 }
 
 function Header() {
-  const { user, logout } = useFirebaseAuth();
   const toggleSidebar = useAppStore((s) => s.toggleSidebar);
 
   return (
@@ -103,16 +101,9 @@ function Header() {
 
       <div className="flex items-center gap-3">
         <ThemeToggle />
-        {user && (
-          <UserProfile
-            viewer={{
-              displayName: user.displayName,
-              email: user.email,
-              photoURL: user.photoURL,
-            }}
-            onLogout={logout}
-          />
-        )}
+        <Show when="signed-in">
+          <UserButton />
+        </Show>
       </div>
     </header>
   );

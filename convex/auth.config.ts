@@ -1,8 +1,14 @@
+const clerkUrl = process.env.CLERK_FRONTEND_API_URL;
+
+if (!clerkUrl) {
+  throw new Error("Missing CLERK_FRONTEND_API_URL environment variable");
+}
+
 const authConfig = {
   providers: [
     {
-      domain: "https://securetoken.google.com/jobly-job",
-      applicationID: "jobly-job",
+      domain: clerkUrl,
+      applicationID: "convex",
     },
   ],
 };

@@ -3,19 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
-  GoogleLogo,
   ShieldCheck,
   Tree,
   Database,
+  LockKey,
 } from "@phosphor-icons/react";
-import useFirebaseAuth from "@/hooks/useFirebaseAuth";
+import { SignInButton, Show } from "@clerk/nextjs";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const features = [
   {
-    icon: GoogleLogo,
-    title: "Firebase Auth",
-    description: "Google OAuth with Convex token sync for seamless auth.",
+    icon: LockKey,
+    title: "Clerk Auth",
+    description: "Clerk authentication with Convex token sync for seamless auth.",
   },
   {
     icon: ShieldCheck,
@@ -35,8 +35,6 @@ const features = [
 ] as const;
 
 export default function LandingPage() {
-  const { isAuthenticated, isLoading, loginWithGoogle } = useFirebaseAuth();
-
   return (
     <div className="flex flex-col items-center">
       {/* Top bar with theme toggle */}
@@ -81,27 +79,36 @@ export default function LandingPage() {
 
         <p className="max-w-2xl text-lg leading-relaxed text-slate-500 dark:text-slate-400">
           A convention-heavy starter template for building real apps with Convex,
-          Next.js, Firebase Auth, Effect-TS, and Zustand.
+          Next.js, Clerk Auth, Effect-TS, and Zustand.
         </p>
 
         {/* CTA Buttons */}
         <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
-          >
-            {isAuthenticated ? "Open Dashboard" : "Go to Dashboard"} →
-          </Link>
-
-          {!isAuthenticated && !isLoading && (
-            <button
-              onClick={loginWithGoogle}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          <Show when="signed-in">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
             >
-              <GoogleLogo size={18} weight="bold" />
-              Sign in with Google
-            </button>
-          )}
+              Open Dashboard →
+            </Link>
+          </Show>
+
+          <Show when="signed-out">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-200 hover:bg-emerald-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+            >
+              Go to Dashboard →
+            </Link>
+            <SignInButton mode="modal">
+              <button
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors duration-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+              >
+                <LockKey size={18} weight="bold" />
+                Sign in
+              </button>
+            </SignInButton>
+          </Show>
         </div>
       </section>
 

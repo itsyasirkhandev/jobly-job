@@ -46,18 +46,27 @@ async function requireIdentity(ctx: { auth: { getUserIdentity: () => Promise<Use
 	return identity;
 }
 
-async function getViewer(ctx: QueryCtx | MutationCtx, tokenIdentifier: string) {
-	return await ctx.db
+async function getViewer(ctx: QueryCtx | MutationCtx, identity: UserIdentity) {
+	let viewer = await ctx.db
 		.query('users')
-		.withIndex('by_token', (q) => q.eq('tokenIdentifier', tokenIdentifier))
+		.withIndex('by_token', (q) => q.eq('tokenIdentifier', identity.tokenIdentifier))
 		.unique();
+
+	if (!viewer && identity.subject) {
+		viewer = await ctx.db
+			.query('users')
+			.withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
+			.unique();
+	}
+
+	return viewer;
 }
 
 const authQueryGuard = customCtxAndArgs({
 	args: {},
 	input: async (ctx: QueryCtx) => {
 		const identity = await requireIdentity(ctx);
-		const viewer = await getViewer(ctx, identity.tokenIdentifier);
+		const viewer = await getViewer(ctx, identity);
 		return { ctx: { ...ctx, identity, viewer }, args: {} };
 	}
 });
@@ -66,7 +75,7 @@ const authMutationGuard = customCtxAndArgs({
 	args: {},
 	input: async (ctx: MutationCtx) => {
 		const identity = await requireIdentity(ctx);
-		const viewer = await getViewer(ctx, identity.tokenIdentifier);
+		const viewer = await getViewer(ctx, identity);
 		return { ctx: { ...ctx, identity, viewer }, args: {} };
 	}
 });

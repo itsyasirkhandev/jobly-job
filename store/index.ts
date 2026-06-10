@@ -4,7 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 import { createUISlice, type UISlice } from './slices/uiSlice';
 
 // Auth state is NOT managed here.
-// useFirebaseAuth (hooks/useFirebaseAuth.ts) is the single Viewer identity source.
+// Convex Auth is the single Viewer identity source.
 // Persisting Firebase auth state in Zustand would create a second source of truth
 // that can drift from the Firebase SDK's own session state.
 export type StoreState = UISlice;

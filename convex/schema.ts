@@ -6,8 +6,11 @@ export default defineSchema({
 		name: v.string(),
 		email: v.string(),
 		avatarUrl: v.optional(v.string()),
-		tokenIdentifier: v.string()
-	}).index('by_token', ['tokenIdentifier']),
+		tokenIdentifier: v.string(),
+		clerkId: v.optional(v.string())
+	})
+		.index('by_token', ['tokenIdentifier'])
+		.index('by_clerk_id', ['clerkId']),
 
 	numbers: defineTable({
 		value: v.number()

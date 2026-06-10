@@ -29,16 +29,31 @@ export const getOrCreateUser = effectAuthedMutation({
 					.unique()
 			);
 
+			if (!viewer && identity.subject) {
+				viewer = yield* Effect.tryPromise(() =>
+					writerDb
+						.query('users')
+						.withIndex('by_clerk_id', (q) => q.eq('clerkId', identity.subject))
+						.unique()
+				);
+			}
+
 			if (viewer) {
 				const updates: Record<string, string | undefined> = {};
-				if (viewer.name !== (identity.name ?? '')) {
-					updates.name = identity.name ?? '';
+				if (identity.name && viewer.name !== identity.name) {
+					updates.name = identity.name;
 				}
-				if (viewer.email !== (identity.email ?? '')) {
-					updates.email = identity.email ?? '';
+				if (identity.email && viewer.email !== identity.email) {
+					updates.email = identity.email;
 				}
-				if (viewer.avatarUrl !== identity.pictureUrl) {
+				if (identity.pictureUrl && viewer.avatarUrl !== identity.pictureUrl) {
 					updates.avatarUrl = identity.pictureUrl;
+				}
+				if (viewer.clerkId !== identity.subject) {
+					updates.clerkId = identity.subject;
+				}
+				if (viewer.tokenIdentifier !== tokenIdentifier) {
+					updates.tokenIdentifier = tokenIdentifier;
 				}
 
 				if (Object.keys(updates).length > 0) {
@@ -51,7 +66,8 @@ export const getOrCreateUser = effectAuthedMutation({
 						name: identity.name ?? '',
 						email: identity.email ?? '',
 						avatarUrl: identity.pictureUrl,
-						tokenIdentifier
+						tokenIdentifier,
+						clerkId: identity.subject
 					})
 				);
 				viewer = (yield* Effect.tryPromise(() => writerDb.get(userId)))!;
