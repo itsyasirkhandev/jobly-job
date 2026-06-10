@@ -1,4 +1,4 @@
-# Project Context — Jobly Job
+# Project Context — Clerk, Convex, Nextjs Starter Template
 
 A convention-heavy starter template for building real apps.
 
